@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tic Tac Toe</title>
+  <meta name="description" content="Play Tic Tac Toe online with a friend or against an unbeatable AI.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" id="brand" type="button" aria-label="Back to home">
+      <span class="brand-x">X</span><span class="brand-o">O</span> Tic Tac Toe
+    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="sound-toggle" type="button" aria-pressed="true" title="Toggle sound">🔊</button>
+      <button class="icon-btn" id="theme-toggle" type="button" title="Toggle dark mode">🌓</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Home -->
+    <section class="screen" id="screen-home">
+      <h1>Pick a mode</h1>
+      <p class="lead">Three in a row wins. X always moves first.</p>
+      <div class="modes">
+        <button class="mode-card" type="button" data-mode="ai">
+          <span class="mode-icon">🤖</span>
+          <span class="mode-title">vs Computer</span>
+          <span class="mode-desc">Easy, medium, or an unbeatable minimax AI.</span>
+        </button>
+        <button class="mode-card" type="button" data-mode="online">
+          <span class="mode-icon">🌐</span>
+          <span class="mode-title">Online</span>
+          <span class="mode-desc">Create a room, share the link, or quick-match a stranger.</span>
+        </button>
+        <button class="mode-card" type="button" data-mode="local">
+          <span class="mode-icon">👥</span>
+          <span class="mode-title">Same device</span>
+          <span class="mode-desc">Pass and play with a friend next to you.</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Online lobby -->
+    <section class="screen" id="screen-lobby" hidden>
+      <h1>Play online</h1>
+      <div class="panel lobby">
+        <label class="field">
+          <span>Your name</span>
+          <input id="player-name" maxlength="20" autocomplete="nickname" placeholder="Player">
+        </label>
+        <div class="lobby-grid">
+          <div class="lobby-option">
+            <h2>New room</h2>
+            <p>Get a code and invite link to share.</p>
+            <button class="btn primary" id="create-room" type="button">Create room</button>
+          </div>
+          <div class="lobby-option">
+            <h2>Join room</h2>
+            <form id="join-form" class="join-form">
+              <input id="room-code" maxlength="5" placeholder="CODE" autocomplete="off"
+                     autocapitalize="characters" spellcheck="false" aria-label="Room code">
+              <button class="btn" type="submit">Join</button>
+            </form>
+          </div>
+          <div class="lobby-option">
+            <h2>Quick match</h2>
+            <p>Get paired with the next player waiting.</p>
+            <button class="btn" id="quick-match" type="button">Find opponent</button>
+          </div>
+        </div>
+        <p class="lobby-status" id="lobby-status" role="status"></p>
+        <p class="conn-status" id="conn-status"></p>
+      </div>
+      <button class="btn ghost back" type="button" data-back>← Back</button>
+    </section>
+
+    <!-- Game -->
+    <section class="screen" id="screen-game" hidden>
+      <div class="game-layout">
+        <div class="game-main">
+          <div class="scoreboard" id="scoreboard">
+            <div class="score" data-mark="X">
+              <span class="score-mark x">X</span>
+              <span class="score-name" id="name-X">Player X</span>
+              <span class="score-value" id="score-X">0</span>
+            </div>
+            <div class="score draw">
+              <span class="score-mark">=</span>
+              <span class="score-name">Draws</span>
+              <span class="score-value" id="score-draw">0</span>
+            </div>
+            <div class="score" data-mark="O">
+              <span class="score-mark o">O</span>
+              <span class="score-name" id="name-O">Player O</span>
+              <span class="score-value" id="score-O">0</span>
+            </div>
+          </div>
+
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+
+          <div class="board" id="board" role="grid" aria-label="Tic Tac Toe board">
+            <!-- 9 cells injected by app.js -->
+          </div>
+
+          <div class="actions" id="actions">
+            <button class="btn primary" id="new-game" type="button">New game</button>
+            <button class="btn" id="undo" type="button">Undo</button>
+            <button class="btn" id="hint" type="button">Hint</button>
+            <button class="btn primary" id="rematch" type="button">Rematch</button>
+            <button class="btn ghost" id="reset-scores" type="button">Reset scores</button>
+          </div>
+        </div>
+
+        <aside class="game-side">
+          <!-- AI settings -->
+          <div class="panel" id="ai-panel">
+            <h2>Computer</h2>
+            <div class="field">
+              <span>Difficulty</span>
+              <div class="segmented" id="difficulty" role="radiogroup" aria-label="Difficulty">
+                <button type="button" role="radio" data-value="easy">Easy</button>
+                <button type="button" role="radio" data-value="medium">Medium</button>
+                <button type="button" role="radio" data-value="hard">Hard</button>
+              </div>
+            </div>
+            <div class="field">
+              <span>You play</span>
+              <div class="segmented" id="ai-mark" role="radiogroup" aria-label="Your mark">
+                <button type="button" role="radio" data-value="X">X (first)</button>
+                <button type="button" role="radio" data-value="O">O (second)</button>
+              </div>
+            </div>
+            <p class="hint-text" id="ai-help"></p>
+          </div>
+
+          <!-- Online room -->
+          <div class="panel" id="online-panel">
+            <h2>Room <span class="room-code" id="room-code-label">—</span></h2>
+            <div class="invite">
+              <input id="invite-link" readonly aria-label="Invite link">
+              <button class="btn" id="copy-link" type="button">Copy</button>
+            </div>
+            <p class="you-are" id="you-are"></p>
+            <p class="spectators" id="spectators"></p>
+            <div class="chat">
+              <ol class="chat-log" id="chat-log" aria-live="polite"></ol>
+              <form class="chat-form" id="chat-form">
+                <input id="chat-input" maxlength="200" placeholder="Say something…" autocomplete="off" aria-label="Chat message">
+                <button class="btn" type="submit">Send</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Move history -->
+          <div class="panel" id="history-panel">
+            <h2>Moves</h2>
+            <ol class="history" id="history"></ol>
+          </div>
+        </aside>
+      </div>
+      <button class="btn ghost back" type="button" data-back>← Leave</button>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="alert" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
